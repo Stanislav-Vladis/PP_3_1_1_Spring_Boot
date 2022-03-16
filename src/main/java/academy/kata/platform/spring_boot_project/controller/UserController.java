@@ -41,15 +41,15 @@ public class UserController {
         return "redirect:/users";
     }
 
-    @DeleteMapping("/users/{id}")
-    public String removeUser(@PathVariable("id") int id) {
-        userService.removeUserById(id);
-        return "redirect:/users";
-    }
-
     @PatchMapping("/users/{id}")
     public String updateUser(@ModelAttribute("user") User user) {
         userService.saveOrUpdate(user);
+        return "redirect:/users";
+    }
+
+    @DeleteMapping("/users/{id}")
+    public String removeUser(@PathVariable("id") long id) {
+        userService.removeUserById(id);
         return "redirect:/users";
     }
 
