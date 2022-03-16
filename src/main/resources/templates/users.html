@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+
+  <div>
+
+    <br>
+    <form class="form-inline" th:object="${user}" th:action="@{/users}" th:method="POST">
+
+      <div class="form-group">
+        <div class="input-group-prepend">
+          <span class="input-group-text" id="addon-wrapping">Новый пользователь: </span>
+          <span>&nbsp;</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <input type="text" class="form-control" required="required" placeholder="Name" th:field="*{name}" name="name"/>
+        <span>&nbsp;</span>
+      </div>
+
+      <div class="form-group">
+        <input type="text" class="form-control" required="required" placeholder="LastName" th:field="*{lastName}" name="lastname"/>
+        <span>&nbsp;</span>
+      </div>
+
+      <div class="form-group">
+        <input type="text" class="form-control" required="required" placeholder="Age" th:field="*{age}" name="age"/>
+        <span>&nbsp;</span>
+      </div>
+
+      <div class="form-group">
+        <input type="text" class="form-control" required="required" placeholder="Email" th:field="*{email}" name="email"/>
+        <span>&nbsp;</span>
+      </div>
+
+      <button type="submit" class="btn btn-success">Добавить</button>
+
+    </form>
+    <br>
+
+
+
+
+    <table class="table table-striped">
+
+      <thead>
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">LastName</th>
+        <th scope="col">Age</th>
+        <th scope="col">Email</th>
+        <th scope="col">Change</th>
+        <th scope="col">Delete</th>
+      </tr>
+      </thead>
+
+      <tr th:each="user : ${listUsers}">
+
+        <form class="form-inline show-users-info" th:method="PATCH" th:action="@{/users/{id}(id=${user.getId()})}" th:name="'user_' + ${user.getId()}">
+
+          <div class="form-group">
+            <td style="vertical-align: middle">
+              <input type="text" class="form-control" required="required" placeholder="Name" name="name" th:value="${user.getName()}" readonly="readonly"/>
+            </td>
+          </div>
+
+          <div class="form-group">
+            <td style="vertical-align: middle">
+              <input type="text" class="form-control" required="required" placeholder="Name" name="lastName" th:value="${user.getLastName()}" readonly="readonly"/>
+            </td>
+          </div>
+
+          <div class="form-group">
+            <td style="vertical-align: middle">
+              <input type="text" class="form-control" required="required" placeholder="Name" name="age" th:value="${user.getAge()}" readonly="readonly"/>
+            </td>
+          </div>
+
+          <div class="form-group">
+            <td style="vertical-align: middle">
+              <input type="text" class="form-control" required="required" placeholder="Name" name="email" th:value="${user.getEmail()}" readonly="readonly"/>
+            </td>
+          </div>
+
+          <td class="form-inline" style="vertical-align: middle">
+            <button type="submit" class="btn btn-warning" value="Change" style="display: none;" th:name="'user_' + ${user.getId()}" th:id="'change_user_' + ${user.getId()}">Подтвердить изменение</button>
+            <span>&nbsp;</span>
+            <button type="button" class="btn btn-primary" value="Unlock" style="display: block;" th:name="'user_' + ${user.getId()}" th:id="'user_' + ${user.getId()}">Разблокировать редактирование</button>
+            <span>&nbsp;</span>
+            <button type="button" class="btn btn-secondary" value="Cancel" style="display: none;" th:name="'user_' + ${user.getId()}" th:id="'cancel_user_' + ${user.getId()}">Отмена</button>
+          </td>
+
+        </form>
+
+        <td style="vertical-align: middle">
+          <form th:method="DELETE" th:action="@{/users/{id}(id=${user.getId()})}">
+            <button type="submit" class="btn btn-danger" value="Delete">Удалить</button>
+          </form>
+        </td>
+
+      </tr>
+
+    </table>
+
+  </div>
+
+
+  <script>
+
+    $('.btn-primary').click(function() {
+
+      //Получаем id блока на который кликнули
+      let id = $(this).attr('name');
+
+      //Скрываем кнопку разблокировки полей ввода
+      $(this).attr('style', 'display: none;')
+      //Отображаем кнопку отправки формы с изменениями
+      $('#change_' + id).attr('style', 'display: block;');
+      //Отображаем кнопку отмены
+      $('#cancel_' + id).attr('style', 'display: block;');
+      //Снимаем блокировку с элементов ввода
+      changeReadStatus(id, false);
+
+    });
+
+    $('.btn-secondary').click(function() {
+      //Получаем id блока на который кликнули
+      let id = $(this).attr('name');
+
+      //Отображаем кнопку разблокировки полей ввода
+      $('#' + id).attr('style', 'display: block;');
+      //Скрываем кнопку отправки формы с изменениями
+      $('#change_' + id).attr('style', 'display: none;');
+      //Скрываем кнопку отмены
+      $(this).attr('style', 'display: none;')
+      //Ставим блокировку на элементы ввода
+      changeReadStatus(id, true);
+
+    });
+
+    function changeReadStatus(id, display) {
+
+      //Получаем форму с страницы и все ее элементы
+      let formElements = document.forms[id].elements;
+
+      //Снимаем / ставим блокировку inputs
+      for (let i = 0; i < formElements.length; i++) {
+        if (formElements[i].className == "form-control") {
+          formElements[i].readOnly = display;
+        }
+      }
+
+    }
+
+  </script>
+
+</body>
+</html>
